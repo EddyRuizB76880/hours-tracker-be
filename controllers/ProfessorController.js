@@ -14,7 +14,7 @@ const ProfessorController = {
  
         const professor = await Professor.findByPk(req.params.id);
 
-        res.status(200).json(JSON.stringify(result));
+        res.status(200).json(JSON.stringify(professor));
     },
 
     deleteProfessor: async (req, res, next) => {
