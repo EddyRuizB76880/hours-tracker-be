@@ -1,0 +1,30 @@
+{
+  "name": "hours-tracker-be",
+  "version": "1.0.0",
+  "description": "Backend for the Hours Tracker Project.",
+  "homepage": "https://github.com/EddyRuizB76880/hours-tracker-be#readme",
+  "bugs": {
+    "url": "https://github.com/EddyRuizB76880/hours-tracker-be/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/EddyRuizB76880/hours-tracker-be.git"
+  },
+  "license": "ISC",
+  "author": "Eddy Ruiz",
+  "type": "module",
+  "main": "app.js",
+  "scripts": {
+    "start": "nodemon app.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "express": "^5.1.0",
+    "mysql2": "^3.14.4",
+    "save": "^2.9.0",
+    "sequelize": "^6.37.7"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.10"
+  }
+}
