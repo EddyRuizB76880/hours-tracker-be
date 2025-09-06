@@ -16,8 +16,6 @@ setRelations();
 
 const dbConnectionResult = await SEQUELIZE_CONNECTION.sync();
 
-console.log(dbConnectionResult);
-
 app.listen(PORT, ()=>{
     console.log(`Listening to requests on port ${PORT}`);
 });
