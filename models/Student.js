@@ -17,11 +17,20 @@ const Student = SEQUELIZE_CONNECTION.define('students', {
     type: DataTypes.STRING,
     allowNull: false,
   },
+  email: {
+    type: DataTypes.STRING,
+    allowNull: false,
+    unique: true
+  },
+  password: {
+    type: DataTypes.STRING,
+    allowNull: false
+  },
   status: {
     type: DataTypes.SMALLINT,
     allowNull: false
   },
-  collegeId:{
+  studentId:{
     type: DataTypes.STRING,
     autoIncrement: false,
   },
