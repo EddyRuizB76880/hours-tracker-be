@@ -1,5 +1,6 @@
 import { validationResult } from 'express-validator';
-import bcrypt from "bcrypt";
+
+import errorCustomizer from '../utils/errors.js';
 
 class BaseController{  
 
@@ -12,18 +13,11 @@ class BaseController{
         
             if(!errors.isEmpty()){
                 console.log('Error!: '+errors);
-                const error = new Error('The resource could not be created due to the following issues.');
-                error.statusCode = 401;
-                error.data = errors.array();
-                throw error;
+                throw errorCustomizer.createError(401, 'The resource could not be created due to the following issues.', errors.array());
             }
 
             console.log("Adding model with this data: " + JSON.stringify(req.body));
             
-            if(req.body.password){
-                req.body.password = await bcrypt.hash(req.body.password, 12);
-            }
-
             const result = await this.model.create({...req.body});
     
             res.status(200).json({message: 'Created resource'});
@@ -61,6 +55,14 @@ class BaseController{
         async indexResources (req, res, next) {
             const resources = await this.model.findAll();
             res.status(200).json(JSON.stringify(resources));   
+        }
+
+        async getResourceWithAssociations(targetPk, associations){
+            const resource = await this.model.findByPk(targetPk, { include: associations });
+            
+            if(resource){
+                return resource;
+            }
         }
   }
 

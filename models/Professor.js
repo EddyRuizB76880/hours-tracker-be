@@ -26,8 +26,10 @@ const Professor = SEQUELIZE_CONNECTION.define('professors', {
     type: DataTypes.STRING,
     allowNull: false,
   },
-  professorId:{
+  internalId:{
     type: DataTypes.STRING,
+    unique: true,
+    allowNull: false,
     autoIncrement: false,
   }
 });

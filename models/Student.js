@@ -28,10 +28,13 @@ const Student = SEQUELIZE_CONNECTION.define('students', {
   },
   status: {
     type: DataTypes.SMALLINT,
+    defaultValue: 0,
     allowNull: false
   },
-  studentId:{
+  internalId:{
     type: DataTypes.STRING,
+    unique: true,
+    allowNull: false,
     autoIncrement: false,
   },
   hoursRemaining: {

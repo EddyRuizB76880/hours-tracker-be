@@ -1,8 +1,11 @@
 import { Sequelize } from "sequelize";
+import dotenv from "dotenv";
 
-const SEQUELIZE_CONNECTION = new Sequelize('hours-tracker', 'root', '', {
+dotenv.config();
+
+const SEQUELIZE_CONNECTION = new Sequelize(process.env.DB_NAME, process.env.DB_USER, process.env.DB_PASSWORD, {
   dialect: 'mysql',
-  host: 'localhost'
+  host: process.env.DB_HOST
 });
 
 
