@@ -1,41 +1,37 @@
-import { validationResult } from 'express-validator';
-
 import errorCustomizer from '../utils/errors.js';
+import constants from '../utils/consts.js';
 
-class BaseController{  
+class BaseController {  
 
         constructor(model){
             this.model = model;
         }
 
-        async postAddResource  (req, res, next) {
-            const errors = validationResult(req);
-        
-            if(!errors.isEmpty()){
-                console.log('Error!: '+errors);
-                throw errorCustomizer.createError(401, 'The resource could not be created due to the following issues.', errors.array());
-            }
-
-            console.log("Adding model with this data: " + JSON.stringify(req.body));
-            
-            const result = await this.model.create({...req.body});
-    
-            res.status(200).json({message: 'Created resource'});
-        }
     
         async getById (req, res, next) {
-            console.log("Retrieveing model with id: " + JSON.stringify(req.params));
+            console.log("Retrieveing model with id: " + JSON.stringify(req.query));
 
-            const resource = await this.model.findByPk(req.params.id);
-            
+            const resource = await this.model.findByPk(req.params.id, { attributes: { exclude: constants.EXCLUDED_FIELDS} });
+            const canRead = await this.canRead(resource, req);
+
+            if(!canRead){
+                throw errorCustomizer.createError(401, constants.UNAUTHORIZED);
+            }
+
             res.status(200).json(JSON.stringify(resource));
         }
     
         async deleteById (req, res, next) {
             console.log("Deleting model with id: " + JSON.stringify(req.params));
-     
+            
             const resource = await this.model.findByPk(req.params.id);
-    
+            const canDelete = await this.canDelete(resource, req);
+
+            if(!canDelete){
+                throw errorCustomizer.createError(401, constants.UNAUTHORIZED);
+            }
+
+            this.deleteAdditionalData(req, resource);
             resource.destroy();
     
             res.status(200).json(JSON.stringify({message: "Deleted"}));;
@@ -45,25 +41,56 @@ class BaseController{
             console.log("Updating model with id: " + JSON.stringify(req.params));
      
             const resource = await this.model.findByPk(req.params.id);
-    
+            const canUpdate = await this.canUpdate(resource, req);
+
+            if(!canUpdate){
+                throw errorCustomizer.createError(401, constants.UNAUTHORIZED);
+            }
+
             resource.set({...req.body});
             resource.save();
+
+            this.updatedAdditionalData(req, resource);
     
-            res.status(200).json(JSON.stringify(model));
+            res.status(200).json(JSON.stringify(resource));
         }
     
         async indexResources (req, res, next) {
-            const resources = await this.model.findAll();
-            res.status(200).json(JSON.stringify(resources));   
+            this.filterQuery(req);
+            
+            const resources = this.model.findAll({ where: req.query, attributes: { exclude: constants.EXCLUDED_FIELDS } });
+            
+            if(resources.length > 0){
+                const canRead = this.canRead(resources[0]);
+
+                if(!canRead){
+                    throw errorCustomizer.createError(401, constants.UNAUTHORIZED )
+                } 
+                
+                res.status(200).json(JSON.stringify(resources));   
+                
+
+            } else{ throw errorCustomizer.createError(404, constants.NOT_FOUND ); }  
         }
 
-        async getResourceWithAssociations(targetPk, associations){
-            const resource = await this.model.findByPk(targetPk, { include: associations });
-            
-            if(resource){
-                return resource;
-            }
+        async canCreate(resource, req) {
+            return false;
         }
+
+        async canRead(resource, req) {
+            return false;
+        }
+
+       async canUpdate(resource, req) {
+            return false;
+        }
+
+        async canDelete(resource, req) {
+            return false;
+        }
+
+        async updatedAdditionalData(req, resource){}
+        async filterQuery(req){}
   }
 
   export default BaseController;

@@ -4,6 +4,7 @@ import jwt from 'jsonwebtoken'
 
 import Student from '../models/Student.js';
 import Professor from '../models/Professor.js';
+
 import errorCustomizer from "../utils/errors.js";
 
 class AuthController {  
@@ -44,7 +45,7 @@ class AuthController {
                     
                     const result = await user.create(fieldsToSave);
                 
-                    res.status(200).json(JSON.stringify({message: `New ${req.get('User-Type')} created!`}));
+                    res.status(201).json(JSON.stringify({message: `New ${req.get('User-Type')} created!`}));
                 } else {
                     throw errorCustomizer.createError(400, 'The following issues were found during signup.', errors);
                 }

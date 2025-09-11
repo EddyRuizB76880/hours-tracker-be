@@ -16,10 +16,6 @@ const Objective = SEQUELIZE_CONNECTION.define('objectives', {
   description: {
     type: DataTypes.STRING,
     allowNull: true,
-  },
-  totalTimeSpent: {
-    type: DataTypes.DOUBLE,
-    allowNull: false
   }
 });
 
