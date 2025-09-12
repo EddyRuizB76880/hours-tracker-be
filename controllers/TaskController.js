@@ -33,7 +33,7 @@ class TaskController extends BaseController {
                 throw errorCustomizer.createError(401, constants.UNAUTHORIZED);
             };
 
-            res.status(200).json(JSON.stringify(task));
+            res.status(200).json(task);
         } else {
             throw errorCustomizer.createError(404, constants.NOT_FOUND);
         }

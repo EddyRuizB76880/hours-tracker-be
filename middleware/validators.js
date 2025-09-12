@@ -10,6 +10,7 @@ const inputValidator = {
 
     createEmailChain: () => body('email').trim().isEmail().withMessage('Invalid email.'),
     createPasswordChain: () => body('password').trim().isLength({ min: 8 }),
+    createNewPasswordChain: () => body('newPassword').trim().isLength({ min: 8 }).withMessage('New password does not meet requirements.'),
     createUserNameChain: () => body('name').trim().not().isEmpty().isLength({ max: 20 }),
     createUserIdChain: () => body(['internalId']).not().isEmpty(),
     createProjectObjectiveTaskNameChain: () => body('name').trim().not().isEmpty().isLength({ max: 50 }),

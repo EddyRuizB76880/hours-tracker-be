@@ -18,7 +18,7 @@ class BaseController {
                 throw errorCustomizer.createError(401, constants.UNAUTHORIZED);
             }
 
-            res.status(200).json(JSON.stringify(resource));
+            res.status(200).json(resource);
         }
     
         async deleteById (req, res, next) {
@@ -31,10 +31,9 @@ class BaseController {
                 throw errorCustomizer.createError(401, constants.UNAUTHORIZED);
             }
 
-            this.deleteAdditionalData(req, resource);
             resource.destroy();
     
-            res.status(200).json(JSON.stringify({message: "Deleted"}));;
+            res.status(200).json({message: "Deleted"});
         }
     
         async updateById (req, res, next) {
@@ -48,11 +47,11 @@ class BaseController {
             }
 
             resource.set({...req.body});
-            resource.save();
+            await resource.save();
 
-            this.updatedAdditionalData(req, resource);
+            await this.updatedAdditionalData(req, resource);
     
-            res.status(200).json(JSON.stringify(resource));
+            res.status(200).json(resource);
         }
     
         async indexResources (req, res, next) {
@@ -67,7 +66,7 @@ class BaseController {
                     throw errorCustomizer.createError(401, constants.UNAUTHORIZED )
                 } 
                 
-                res.status(200).json(JSON.stringify(resources));   
+                res.status(200).json(resources);   
                 
 
             } else{ throw errorCustomizer.createError(404, constants.NOT_FOUND ); }  

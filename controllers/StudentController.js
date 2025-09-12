@@ -87,7 +87,7 @@ class StudentController extends BaseController {
 
     async canUpdate(student, req) {
         if(req.decodedToken.type === consts.STUDENT_TYPE && student.id === req.decodedToken.id){
-            const allowedFields = ['name', 'field', 'email', 'password'];
+            const allowedFields = ['name', 'field', 'email'];
             const changingFields = Object.keys(req.body);
 
             return utils.isValidChange(allowedFields, changingFields);

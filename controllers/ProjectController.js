@@ -48,7 +48,7 @@ class ProjectController extends BaseController {
         const project = await this.model.findByPk( req.params.id, {include:[ { model: Professor }, { model: Student }, { model: Objective } ]});
 
         if(project){
-            res.status(200).json(JSON.stringify(project));
+            res.status(200).json(project);
         } else {
             throw errorCustomizer.createError(404, constants.NOT_FOUND);
         }
@@ -57,7 +57,7 @@ class ProjectController extends BaseController {
 
     async getProfessorProjects(req, res, next){
         const projects = await this.model.findAll({ where: { professorId: req.params.id }, attributes: { exclude: constants.EXCLUDED_FIELDS }, include: { model: Objective } });
-        res.status(200).json(JSON.stringify(projects));
+        res.status(200).json(projects);
     }
 
     async assignStudent(req, res, next){

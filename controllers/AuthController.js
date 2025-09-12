@@ -6,6 +6,7 @@ import Student from '../models/Student.js';
 import Professor from '../models/Professor.js';
 
 import errorCustomizer from "../utils/errors.js";
+import constants from "../utils/consts.js";
 
 class AuthController {  
 
@@ -45,7 +46,7 @@ class AuthController {
                     
                     const result = await user.create(fieldsToSave);
                 
-                    res.status(201).json(JSON.stringify({message: `New ${req.get('User-Type')} created!`}));
+                    res.status(201).json({message: `New ${req.get('User-Type')} created!`});
                 } else {
                     throw errorCustomizer.createError(400, 'The following issues were found during signup.', errors);
                 }
@@ -54,7 +55,7 @@ class AuthController {
             }
         }
 
-        async login(req, res, next){
+        async login(req, res, next) {
             const isStudentLogin = req.get('User-Type') === 'student';
             const user = isStudentLogin ? Student : Professor;
 
@@ -72,13 +73,8 @@ class AuthController {
                                                 email: userInstance.email,
                                                 internalId: userInstance.internalId,
                                               }
-                        if(isStudentLogin) fieldsToSend = this.appendStudentFields(fieldsToSend, { 
-                                                                                                    hoursRemaining: userInstance.hoursRemaining, 
-                                                                                                    deadline: userInstance.deadline, 
-                                                                                                    status: userInstance.status 
-                                                                                                }); 
 
-                        res.status(200).json({ token: token, user: fieldsToSend});
+                        res.status(200).json({ token: token, user: fieldsToSend });
 
                     } else {
                         throw errorCustomizer.createError(400, 'Wrong credentials.', errors);
@@ -89,6 +85,33 @@ class AuthController {
                 
             } else {
                 throw errorCustomizer.createError(400, 'The following issues were found during login.', errors);
+            }
+        }
+
+        async setNewPassword(req, res, next) {
+            const errors = validationResult(req).array();
+            
+            if(errors.length === 0){
+                const model = req.decodedToken.type === constants.STUDENT_TYPE ? Student : Professor;
+                const user = await model.findOne({ where: { email: req.decodedToken.email } });
+
+                if(user) { 
+                    const isMatchingPassword = await bcrypt.compare(req.body.password, user.password);
+                    
+                    if(isMatchingPassword){
+                        user.set( { password: await bcrypt.hash(req.body.newPassword, 12) } );
+                        await user.save();
+
+                        res.status(200).json({ message: 'New password saved successfully!' });
+                    } else {
+                        throw errorCustomizer.createError(400, constants.BAD_REQUEST, [{ message: "Incorrect Password." }]);
+                    }
+
+                } else {
+                    throw errorCustomizer.createError(404, constants.NOT_FOUND);
+                }
+            }else{
+                throw errorCustomizer.createError(400, constants.BAD_REQUEST, errors);
             }
         }
 

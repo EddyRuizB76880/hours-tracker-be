@@ -69,6 +69,12 @@ router.post('/signup', [
 ],
 authController.signup.bind(authController));
 
+router.post('/resetPassword', [  
+  inputValidator.createPasswordChain(),
+  inputValidator.createNewPasswordChain(),
+],
+authController.setNewPassword.bind(authController));
+
 router.post('/login', [ 
   inputValidator.createEmailChain(), 
   inputValidator.createPasswordChain(),

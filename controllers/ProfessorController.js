@@ -15,7 +15,7 @@ class ProfessorController extends BaseController {
         const professor = await this.model.findByPk(req.params.id, { include: { model: Project } });
         
         if(professor){
-            res.status(200).json(JSON.stringify(professor));
+            res.status(200).json(professor);
         } else{
             throw errorCustomizer.createError(404, constants.NOT_FOUND);
         }
