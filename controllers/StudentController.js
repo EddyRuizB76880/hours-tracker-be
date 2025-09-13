@@ -81,7 +81,7 @@ class StudentController extends BaseController {
         return false;
     }
 
-    async canRead(project, req) {
+    async canRead(student, req) {
        return true;
     }
 

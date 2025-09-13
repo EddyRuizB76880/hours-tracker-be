@@ -38,7 +38,9 @@ const inputValidator = {
 
     createTaskDescriptionChain: () => body('description').trim().not().isEmpty().isLength({ max: 100 }),
     createHoursSpentChain: () => body('hoursSpent').not().isEmpty().isNumeric(),
-    createUserTypeChain: () => header('User-Type').trim().not().isEmpty(),
+    createUserTypeChain: () => header('User-Type').trim().not().isEmpty().custom((value, { req }) => {
+        return value === constants.STUDENT_TYPE || value === constants.PROFESSOR_TYPE; 
+    }).withMessage('Only professors or students may be created.'),
 }
 
 export default inputValidator;

@@ -31,7 +31,12 @@ class ProfessorController extends BaseController {
     }
 
     async canUpdate(professor, req) {
-        return professor.id === req.decodedToken.id;
+        if(professor.id === req.decodedToken.id){
+            const allowedFields = ['name', 'field', 'email'];
+            const changingFields = Object.keys(req.body);
+
+            return utils.isValidChange(allowedFields, changingFields);
+        }
     }
 
     async canDelete(professor, req) {

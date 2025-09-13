@@ -5,7 +5,7 @@ import constants from '../utils/consts.js';
 
 const authenticator = {
     authenticateRequest: (req, res, next) => {
-            const publicRoutes = ['/login', '/signup']
+            const publicRoutes = ['/login']
             const authHeader = req.get('Authorization');
             if(! publicRoutes.includes(req.path)){
                 if (!authHeader) {
@@ -16,7 +16,7 @@ const authenticator = {
                     try {
                         decodedToken = jwt.verify(token, process.env.SECRET);
                     } catch (err) {
-                        throw errorCustomizer.createError(500, 'Internal Error')
+                        throw errorCustomizer.createError(500, 'Internal error')
                     }
 
                 if (!decodedToken) {

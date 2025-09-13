@@ -14,15 +14,14 @@ class AuthController {
 
         async signup(req, res, next) {
             const isStudentSignup = req.get('User-Type') === 'student';
-            const user = isStudentSignup ? Student : Professor;
 
             const errors = validationResult(req).array();
             
-
             if(errors.length === 0){
 
-                if(await this.isEmailInUse(req.body.email, user)) errors.push({message: 'Email already in use!'});
-                if(await this.isInternalIdInUse(req.body.internalId, user)) errors.push({message: 'Internal ID already in use!'});
+                if(await this.isEmailInUse(req.body.email, Professor)) errors.push( { message: 'Email already in use!' } );
+                if(await this.isInternalIdInUse(req.body.internalId, Professor)) errors.push({ message: 'Internal ID already in use!' });
+                if(req.decodedToken.type !== constants.PROFESSOR_TYPE) errors.push({ message: 'Only professors are allowed to create accounts.' });
 
                 if(errors.length === 0){
                     const hashedPassword = await bcrypt.hash(req.body.password, 12);
@@ -33,16 +32,21 @@ class AuthController {
                         const deadline = new Date(Date.now());
                         deadline.setFullYear(beganOn.getFullYear() + 1);
 
-                        fieldsToSave = this.appendStudentFields(fieldsToSave, { 
-                                                                                status: 1,
-                                                                                beganOn: beganOn.toString(), 
-                                                                                deadline: deadline.toString(),
-                                                                                hoursRemaining: 300,
-                                                                            }); 
-                                                                                        
-                    }
+                        Object.assign(fieldsToSave, { 
+                                                        status: constants.ACTIVE_STUDENT,
+                                                        beganOn: beganOn.toString(), 
+                                                        deadline: deadline.toString(),
+                                                        hoursRemaining: constants.TOTAL_HOURS_REQUIRED,
+                                                    });
+                        
+                        const professor = await Professor.findByPk(req.decodedToken.id);
                     
-                    const result = await user.create(fieldsToSave);
+                        await professor.createStudent(fieldsToSave);
+
+                        //To do: send an email to the students address 
+                    } else {
+                        await Professor.create(fieldsToSave);
+                    }
                 
                     res.status(201).json({message: `New ${req.get('User-Type')} created!`});
                 } else {
@@ -111,11 +115,6 @@ class AuthController {
             }else{
                 throw errorCustomizer.createError(400, constants.BAD_REQUEST, errors);
             }
-        }
-
-        appendStudentFields(baseFields, addedFields) {
-            const fieldsToSend = {...baseFields, ...addedFields};
-            return fieldsToSend;
         }
 
         generateAuthToken(user, type) {

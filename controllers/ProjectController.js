@@ -8,6 +8,8 @@ import errorCustomizer from "../utils/errors.js";
 
 import BaseController from "./BaseController.js";
 
+import { Op } from "sequelize";
+
 class ProjectController extends BaseController {
     constructor(){
         super(Project);
@@ -20,6 +22,7 @@ class ProjectController extends BaseController {
             if(professor){
                 const project = await professor.createProject({ ...req.body });
                 await this.saveObjectives(req, project);
+                await this.linkStudentsAndProjects(JSON.parse(req.body.studentIds), project);
                 res.status(200).json({ message: "Project created!"});
             } else {
                 throw errorCustomizer(404, constants.NOT_FOUND);
@@ -37,7 +40,7 @@ class ProjectController extends BaseController {
 
             await project.save();
         } catch(e){
-            project.destroy();
+            await project.destroy();
             throw errorCustomizer.createError(500, "Project creation failed.");
 
         }
@@ -60,9 +63,10 @@ class ProjectController extends BaseController {
         res.status(200).json(projects);
     }
 
-    async assignStudent(req, res, next){
-        // validate that the project belongs to the professor who is 
-
+    async linkStudentsAndProjects(studentIds, project){
+        if(studentIds){
+            await project.setStudents(studentIds);
+        }
     }
 
     canCreate(req) {
@@ -82,7 +86,15 @@ class ProjectController extends BaseController {
     }
 
     async updatedAdditionalData(project, req){
-        //update objectives
+        //update objectives and students if necessary
+    }
+
+    async deleteAdditionalData(project, req){
+        const objectives = await project.getObjectives();
+     
+        for(let objective of objectives){
+            await objective.destroy();
+        }
     }
 }
 

@@ -32,7 +32,12 @@ class BaseController {
                 throw errorCustomizer.createError(401, constants.UNAUTHORIZED);
             }
 
-            resource.destroy();
+            if(!resource){
+                throw errorCustomizer.createError(404, constants.NOT_FOUND);
+            }
+
+            await this.deleteAdditionalData(resource, req);
+            await resource.destroy();
     
             res.status(200).json({message: "Deleted"});
         }
@@ -95,7 +100,9 @@ class BaseController {
             return false;
         }
 
-        async updatedAdditionalData(req, resource){}
+        async updatedAdditionalData(resource, req){}
+        async deleteAdditionalData(resource, req){}
+
         async filterQuery(req){}
   }
 
