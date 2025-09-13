@@ -24,8 +24,6 @@ class AuthController {
                 if(await this.isEmailInUse(req.body.email, user)) errors.push({message: 'Email already in use!'});
                 if(await this.isInternalIdInUse(req.body.internalId, user)) errors.push({message: 'Internal ID already in use!'});
 
-                if(!this.isValidID(req.body.internalId.trim())) errors.push({ message: 'Invalid ID.' });
-
                 if(errors.length === 0){
                     const hashedPassword = await bcrypt.hash(req.body.password, 12);
                     let fieldsToSave = {...req.body, password: hashedPassword};
@@ -140,15 +138,6 @@ class AuthController {
         async isInternalIdInUse(id, user){
             const count = await user.count({ where: { internalId: id }});
             return count > 0;
-        }
-
-        isValidID(id){
-            const isExpectedLength = id.length === 6;
-            //ToDo: make sure the first char is a letter and not a comma, exclamation mark, etc...
-            const isFirstCharAUpperCaseLetter = Number.isNaN(Number(id.charAt(0)));
-            const isRestOfTheIdNaN = Number.isNaN(Number(id.substring(1)));
-            console.log('Evaluation results ' + isExpectedLength + ' ' + isFirstCharAUpperCaseLetter + ' ' + !isRestOfTheIdNaN);
-            return isExpectedLength && isFirstCharAUpperCaseLetter && !isRestOfTheIdNaN;
         }
   }
 

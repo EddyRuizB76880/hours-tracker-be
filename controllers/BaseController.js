@@ -1,5 +1,6 @@
 import errorCustomizer from '../utils/errors.js';
 import constants from '../utils/consts.js';
+import { validationResult } from 'express-validator';
 
 class BaseController {  
 
@@ -38,7 +39,13 @@ class BaseController {
     
         async updateById (req, res, next) {
             console.log("Updating model with id: " + JSON.stringify(req.params));
-     
+            
+            const errors = validationResult(req).array();
+
+            if(errors.length > 0) {
+                throw errorCustomizer.createError(400, constants.BAD_REQUEST, errors);
+            }
+
             const resource = await this.model.findByPk(req.params.id);
             const canUpdate = await this.canUpdate(resource, req);
 
