@@ -7,7 +7,6 @@ class BaseController {
         constructor(model){
             this.model = model;
         }
-
     
         async getById (req, res, next) {
             console.log("Retrieveing model with id: " + JSON.stringify(req.query));
@@ -17,6 +16,10 @@ class BaseController {
 
             if(!canRead){
                 throw errorCustomizer.createError(401, constants.UNAUTHORIZED);
+            }
+
+            if(!resource){
+                throw errorCustomizer.createError(404, constants.NOT_FOUND);
             }
 
             res.status(200).json(resource);
@@ -56,6 +59,10 @@ class BaseController {
 
             if(!canUpdate){
                 throw errorCustomizer.createError(401, constants.UNAUTHORIZED);
+            }
+
+            if(!resource){
+                throw errorCustomizer.createError(404, constants.NOT_FOUND);
             }
 
             resource.set({...req.body});

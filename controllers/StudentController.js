@@ -16,6 +16,8 @@ class StudentController extends BaseController {
 
     async getStudentSummary(req, res, next){
         const id = req.params.id ?? req.decodedToken.id;
+        // The raw attribute makes the query return a regular JSON object instead of Sequelize's model.
+        // This is necessary so the metrics can be appended to the student's JSON data.
         let student = await this.model.findByPk(
                                         id,
                                         {  
@@ -40,7 +42,6 @@ class StudentController extends BaseController {
             res.status(200).json(student);
         } else {
            throw errorCustomizer.createError(404, constants.NOT_FOUND);
-           ;
         }
     }
 

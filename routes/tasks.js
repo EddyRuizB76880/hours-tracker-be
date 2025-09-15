@@ -10,7 +10,8 @@ const taskController = new TaskController();
 
 router.post('/task', [ 
     inputValidator.createTaskDescriptionChain(), 
-    inputValidator.createProjectObjectiveTaskNameChain() 
+    inputValidator.createProjectObjectiveTaskNameChain(),
+    inputValidator.createObjectiveIdChain()
 ],
 taskController.createTask.bind(taskController));
 
@@ -20,9 +21,9 @@ router.patch('/task/:id', [
 ],
 taskController.updateById.bind(taskController));
 
-router.patch('/review', [ 
+router.patch('/review/:id', [ 
     inputValidator.createTaskStatusChain(), 
-    inputValidator.createTaskRejectionChain() 
+    inputValidator.createTaskRejectionChain()
 ],
 taskController.reviewTask.bind(taskController)
 );

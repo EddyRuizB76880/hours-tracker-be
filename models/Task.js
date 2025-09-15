@@ -21,8 +21,8 @@ const Task = SEQUELIZE_CONNECTION.define('tasks', {
     type: DataTypes.DOUBLE,
     allowNull: false
   },
-  approved: {
-    type: DataTypes.BOOLEAN,
+  status: {
+    type: DataTypes.SMALLINT,
     allowNull:false
   },
   rejectionReason: {

@@ -1,3 +1,4 @@
+import { validationResult } from "express-validator";
 import Objective from "../models/Objective.js";
 import Professor from "../models/Professor.js";
 import Project from "../models/Project.js";
@@ -16,16 +17,23 @@ class ProjectController extends BaseController {
     }
 
     async createProject(req, res, next) {
+
         if(this.canCreate(req)){
-            console.log(req);
-            const professor = await Professor.findByPk(req.decodedToken.id);
-            if(professor){
-                const project = await professor.createProject({ ...req.body });
-                await this.saveObjectives(req, project);
-                await this.linkStudentsAndProjects(JSON.parse(req.body.studentIds), project);
-                res.status(200).json({ message: "Project created!"});
+            const errors = validationResult(req).array();
+            if(errors.length > 0){
+                throw errorCustomizer.createError(400, 'Project creation contains the following errors: ', errors)
             } else {
-                throw errorCustomizer(404, constants.NOT_FOUND);
+                const professor = await Professor.findByPk(req.decodedToken.id);
+                if(professor){
+                    const project = await professor.createProject({ ...req.body });
+                    await this.saveObjectives(req, project);
+
+                    if(req.body.studentIds) await this.linkStudentsAndProjects(JSON.parse(req.body.studentIds), project);
+                    
+                    res.status(200).json({ message: "Project created!"});
+                } else {
+                    throw errorCustomizer(404, constants.NOT_FOUND);
+                }
             }
         }else{ throw errorCustomizer.createError(401, constants.UNAUTHORIZED) };
     }

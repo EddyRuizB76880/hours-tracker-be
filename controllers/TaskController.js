@@ -1,3 +1,4 @@
+import { validationResult } from "express-validator";
 import Objective from "../models/Objective.js";
 import Professor from "../models/Professor.js";
 import Project from "../models/Project.js";
@@ -39,22 +40,45 @@ class TaskController extends BaseController {
         }
     }
 
-    async createTask(req, res, next) {
-        if(this.canCreate()){
-            const student = await this.model.findByPk(req.decodedToken.id);
-            if(student){
-                await student.createTask({ ...req.body });
-                res.status(200).json({  "message": "Task created!" });
+    async createTask(req, res, next) { 
+        if(this.canCreate(req)){
+            const errors = validationResult(req).array();
+
+            if(errors.length > 0) {
+                throw errorCustomizer.createError(400, 'Task creation contains the following errors: ', errors);
             } else {
-                throw errorCustomizer(400, constants.BAD_REQUEST);
+                const student = await Student.findByPk(req.decodedToken.id);
+               
+                if(student){
+                    const isAssignedProject = await this.isAssignedProject(req.body, student);
+                    
+                    if(isAssignedProject){
+                        await student.createTask({ ...req.body, status: constants.TASK_IN_REVIEW });
+                        res.status(200).json({ "message": "Task created!" });
+                    } else {
+                        throw errorCustomizer.createError(401, 'Unauthorized objective ID.');
+                    }
+                } else {
+                    throw errorCustomizer.createError(400, 'Invalid student ID');
+                }
             }
         } else {
-            throw errorCustomizer(401, constants.UNAUTHORIZED);
+            throw errorCustomizer.createError(401, constants.UNAUTHORIZED);
+        }
+    }
+
+    async isAssignedProject(body, student){
+        const objective = await Objective.findByPk(body.objectiveId, { include: Project } );
+        if(objective){
+            const isAssigned = await student.hasProject(objective.project);
+            return isAssigned;
+        } else {
+            throw errorCustomizer.createError(400, 'Invalid objective ID');
         }
     }
 
     async reviewTask(req, res, next){
-        const task = await this.model.findByPk(req.body.taskId,{ include: [ { model: Student } ] } );
+        const task = await this.model.findByPk(req.params.id,{ include: [ { model: Student } ] } );
 
         if(task){
             const newStatus = Number(req.body.status);
@@ -62,6 +86,10 @@ class TaskController extends BaseController {
             const canReview = await this.canReview(task, req);
             
             if(canReview){
+                const errors = validationResult(req).array();
+                if(errors.length > 0){
+                    throw errorCustomizer.createError(400, "Review submission contains the following errors: ", errors);
+                }
 
                 if(statusUpdated && newStatus === constants.TASK_ACCEPTED) {
                     task.student.hoursRemaining -= task.hoursSpent;
@@ -76,7 +104,7 @@ class TaskController extends BaseController {
                 task.status = newStatus;
                 if(req.body.rejectionReason) task.rejectionReason = req.body.rejectionReason;
 
-                task.save();
+                await task.save();
 
                 res.status(200).json({message: 'Review submitted.'});
             } else {
@@ -90,7 +118,7 @@ class TaskController extends BaseController {
 
     canCreate(req) {
         if(req.decodedToken.type === constants.STUDENT_TYPE){
-            const allowedFields = ['name', 'description', 'hoursSpent'];
+            const allowedFields = ['name', 'description', 'hoursSpent', 'objectiveId'];
             const incomingFields = Object.keys(req.body);
 
             return utils.isValidChange(allowedFields, incomingFields);
@@ -114,7 +142,7 @@ class TaskController extends BaseController {
 
     async canUpdate(task, req) {
         if( task.status !== constants.TASK_ACCEPTED && req.decodedToken.type === constants.STUDENT_TYPE && req.decodedToken.id === task.studentId ){
-            const allowedFields = ['name', 'description', 'hoursSpent'];
+            const allowedFields = ['name', 'description', 'hoursSpent', 'objectiveId'];
             const changingFields = Object.keys(req.body);
 
             return req.decodedToken.id === task.studentId && utils.isValidChange(allowedFields, changingFields);
@@ -130,7 +158,6 @@ class TaskController extends BaseController {
             const changingFields = Object.keys(req.body);
             
             task.student = await task.getStudent();
-
             return req.decodedToken.id === task.student.professorId && utils.isValidChange(allowedFields, changingFields);
         }
 

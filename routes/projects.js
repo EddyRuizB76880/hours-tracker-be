@@ -10,7 +10,8 @@ const projectController = new ProjectController();
 
 router.post('/project', [ 
     inputValidator.createProjectObjectiveTaskNameChain(), 
-    inputValidator.createProjectDescriptionChain() 
+    inputValidator.createProjectDescriptionChain(),
+    inputValidator.createProjectAssignmentsChain().optional(),
   ],
 projectController.createProject.bind(projectController));
 
